@@ -43,7 +43,7 @@ python3 bot.py
 
 Podem accedir al xat amb el el Convex Polygon Bot fent click [aquí](https://t.me/polygonsarnaubot)
 
-###Comandes
+#### Comandes
 
 * ```/start``` - Inicialitza el bot.
 * ```/instructions``` - Proporciona informació sobre les comandes del bot.
