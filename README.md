@@ -51,6 +51,7 @@ Llistat de comandes bàsiques per a interactuar amb el bot
 * ```/instructions``` - Proporciona informació sobre les comandes del bot.
 * ```/documentation``` - Proporciona la documentació del projecte.
 * ```/author``` - Autor del projecte.
+* ```/savedPolygons``` - Retorna els polígons creats fins al moment.
 * ```readExpr()``` - No és una comanda executable. Serà el handler encarregat de llegir qualsevol missatge que no correspongui amb les comandes anteriors i passar-lo a l'evaluador de la nova gramàtica 
 
 #### Gramàtica
@@ -83,14 +84,14 @@ La comanda ```color``` acompanyada del codi de color i l'identificador d'un pol�
 
 ##### Comanda ```draw```
 
-Donat un nom de fitxer amb extensió ```.png``` i una llista d'identificadors de polígons retorna una imatge amb els polígons dibuixats amb el color corresponent.
+Donat un nom de fitxer amb extensió ```.png``` i una llista d'identificadors indefinida de polígons retorna una imatge amb els polígons dibuixats amb el color corresponent.
 
 ##### Operadors
 
 * ```*``` - representa la intersecció entre dos polígons.
 * ```+``` - representa la unió entre dos polígons.
 * ```#``` - operador unari que retorna la bounding box (o capsa englobant) d'un polígon en forma de quatre vèrtex.
-* ```!n``` - retorna un polígon creat a partir de 100 punts aleatoris dins del rang ([0,1]²).
+* ```!n``` - retorna un polígon creat a partir de ```n``` punts aleatoris dins del rang ([0,1]²). No es garanteix que el polígon convex resultant tingui n punts ja que és possible que alguns d'ells quedin a dintre del convex hull i, per tant, no s'incloguin al polígon.
 
 ##### Exemple
 
@@ -98,7 +99,7 @@ Script d'exemple:
 
 ```
 // sample script
-p1 := [0 0  0 1  1 1  0.2 0.8]
+p1 := [0 0  0 1  1 1  0.2 0.8] //one separation space between x and y components, two between points
 color p1, {1 0 0}
 print p1
 area p1
@@ -124,6 +125,10 @@ print p1 * p2                           // intersection
 print #p2                               // bounding box
 equal p1 + p2, #p2                      // complex operations
 p3 := #((p1 + p2) * [0 0  1 0  1 1])    // complex operations
+
+p3 := [-0.5 -0.5  -0.5 0.5  0.5 0.5  0.5 -0.5]
+color p3, {0 0 1}
+draw "image.png", p1, p2, p3
 
 r := !100                               // convex polygon made with 100 random points
 ```
@@ -155,7 +160,7 @@ Breu explicació dels arxius principals del projecte
 
 ### Arxiu ```bot.py```
 
-Arxiu que s'encarrega d'executar el bot de Telegram i d'establir la comunicació entre l'usuari i l'evaluador de la nostra gramàtica. Cada cop que s'inicialitza (o es reinicia) el bot es crea una nova instància de la classe EvalPolygon i, per tant, s'esborren tots els polígons que s'havien creat previament.
+Arxiu que s'encarrega d'executar el bot de Telegram i d'establir la comunicació entre l'usuari i l'evaluador de la nostra gramàtica. Cada cop que s'inicialitza (o es reinicia) el bot es crea una nova instància de la classe EvalPolygon i, per tant, s'esborren tots els polígons que s'havien creat previament. Per comunicar-se amb l'evaluador, el bot captura tots els missatges que li envia l'usuari i, si no corresponen amb cap comanda predefinida, convertirà el text del missatge en un ```InputStream()``` que enviarà a la classe EvalPolygon. El resultat obtingut es retornarà a l'usuari en forma de missatge.
 
 ### Arxiu ```Polygons.py```
 
@@ -163,7 +168,7 @@ Implementa la classe ConvexPoligon i totes les seves operacions. És usada per `
 
 #### Classe ```ConvexPolygon```
 
-La classe ```ConvexPolygon``` consta dels dos atributs privats ```points``` i ```color``` que representen, respectivament, els punts que formen el polígon, mitjançant una llista de tuples de dos ```floats```, i el color amb que s'ha de representar, amb una tupla de tres enters dins del rang [0,255]. 
+La classe ```ConvexPolygon``` consta dels dos atributs privats ```points``` i ```color``` que representen, respectivament, els punts que formen el polígon, mitjançant una llista de tuples de dos ```floats```, i el color amb que s'ha de representar, amb una tupla de tres enters dins del rang [0,255]. Dins del codi es pot trobar una descripció més detallada de cada funció que implementa la classe.
 
 ### Arxiu ```EvalPolygon.py```
 
